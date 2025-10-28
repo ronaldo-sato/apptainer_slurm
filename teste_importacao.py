@@ -1,4 +1,4 @@
-''' Teste para modularização
+''' Teste para modularização no Cluster
     Criado: 28/10/2025 '''
 
 # Aqui ao invés de importar diretamente da pasta
