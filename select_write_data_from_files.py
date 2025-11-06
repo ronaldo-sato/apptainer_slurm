@@ -36,12 +36,24 @@ import os
 import sys
 import json
 
-from utils import *
-
 
 # Mapeamento Contêiner
 path_local = '/rotinas'
 path_base = '/base'
+
+try:
+
+    from utils import url, fprefix
+    from utils import *
+
+except ModuleNotFoundError:
+
+    import sys
+
+    sys.path.insert(0, path_local)
+
+    from utils import url, fprefix
+    from utils import *
 
 
 with open(
@@ -84,7 +96,7 @@ if not os.path.exists(f'{path_base}/{path2save}'):
 
 if all([not _date for _date in date]) and not year:
 
-    start = '01/08/2010 00:00'
+    start = '01/01/2010 00:00'
     end = '31/12/2019 23:00'
 
 elif all([_date for _date in date]):
