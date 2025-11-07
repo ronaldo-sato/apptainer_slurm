@@ -176,19 +176,41 @@ def plot_hovmoller(variable, clabel=False):
         levels = np.arange(0., vmax+1, 45.)
         ticks = levels.tolist()
 
-        cmap = plt.get_cmap('RdYlBu_r', 128)
-
-        newcolors = np.vstack((cmap(np.linspace(.0, .5, 128)),
-                               cmap(np.linspace(.0, .5, 128))[::-1]))
-
-        newcolors = np.roll(newcolors, int(cmap.N*(-.25)), axis=0) #.75
-
-        cmap = ListedColormap(newcolors, name='RdYlBu_cutted')
-    
         if False:
 
-            cmap = plt.get_cmap('jet', 256)
-            cmap = ListedColormap(cmap(np.linspace(.15, .95, 256)))    
+            cmap = plt.get_cmap('RdYlBu_r', 128)  # Spectral_r
+
+            _colors = np.vstack((cmap(np.linspace(.0, .5, 128)),
+                                 cmap(np.linspace(.0, .5, 128))[::-1]))
+
+            _colors = np.roll(_colors, int(cmap.N*(-.25)), axis=0) #.75
+
+            cmap = ListedColormap(_colors, name='RdYlBu_cutted')
+
+        if True:
+
+            cmap = plt.get_cmap('RdBu_r', 128) 
+
+            _colors = np.vstack((cmap(np.linspace(.1, .5, 128)),
+                                 cmap(np.linspace(.1, .5, 128))[::-1]))
+
+            _colors = np.roll(_colors, int(cmap.N*(-.25)), axis=0)
+
+            cmap = ListedColormap(_colors, name='RdBu_cutted')
+
+            # cmap = plt.get_cmap('bwr', 128)
+
+            # _colors = np.vstack((cmap(np.linspace(.1, .5, 128)),
+            #                      cmap(np.linspace(.1, .5, 128))[::-1]))
+
+            # _colors = np.roll(_colors, int(cmap.N*(-.25)), axis=0)
+
+            # cmap = ListedColormap(_colors, name='bwr_cutted')
+
+            # cmap = plt.get_cmap('jet', 256)
+            # _colors = cmap(np.linspace(.15, .95, 256))
+            # _colors = np.roll(_colors, int(cmap.N*(-.25)), axis=0)
+            # cmap = ListedColormap(_colors, name='jet_rolled')
 
         norm = Normalize(vmin=vmin, vmax=vmax, clip=False)
 
@@ -245,8 +267,8 @@ def plot_hovmoller(variable, clabel=False):
 
         ax.set_title(
             f'{dataset}\nPonto de grade próximo à'
-            f' lat={round(ds['lat'].item(), ndigits=4)},'
-            f' lon={round(ds['lon'].item(), ndigits=4)}\n'
+            f' lat={round(ds["lat"].item(), ndigits=4)},'
+            f' lon={round(ds["lon"].item(), ndigits=4)}\n'
             'Diagrama Hovmöller',
             fontsize=22, pad=18)
 
@@ -336,8 +358,8 @@ def plot_hovmoller(variable, clabel=False):
 
     fig.savefig(
         f'{path2save}/hovmoller_{variable}_'
-        f'{df.index.get_level_values('time')[0].strftime('%b%Y')}'
-        f'-{df.index.get_level_values('time')[-1].strftime('%b%Y')}.png',
+        f'{df.index.get_level_values("time")[0].strftime(r"%b%Y")}'
+        f'-{df.index.get_level_values("time")[-1].strftime(r"%b%Y")}.png',
         format='png')
 
     return fig, ax
