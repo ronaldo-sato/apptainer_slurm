@@ -16,6 +16,7 @@ import pandas as pd
 
 import json
 import os
+import re
 
 # Mapeamento Contêiner
 path_data = '/base'
@@ -50,6 +51,11 @@ _end = datetime.strptime(end, r'%d/%m/%Y %H:%M')
 
 url, fprefix, fsuffix = dataset_url_prefix(dataset)
 
+if re.match('.*(/dodsC/).*', url):
+
+    # dodsC para acessar direto do Python; fileServer para baixar
+    url = re.sub('dodsC', 'fileServer', url)
+
 if not year:
 
     years = [
@@ -76,7 +82,7 @@ for year in years:
     s_end = (
         f'{_end.day:02d}/{_end.month:02d}/{year}'
         f' {_end.time().strftime("%H:%M")}')
-    
+
     start = datetime.strptime(s_start, r'%d/%m/%Y %H:%M')
     end = datetime.strptime(s_end, r'%d/%m/%Y %H:%M')
 
@@ -134,6 +140,6 @@ end_ = datetime.now()
 
 print(f'Finalizado em {end_}', 'após', str(end_-start_))
 
-# with open('/rotinas/download.log', 'w') as f:
+# with open(f'/rotinas/{dataset}/download.log', 'w') as f:
 
 #     f.writelines(log)
