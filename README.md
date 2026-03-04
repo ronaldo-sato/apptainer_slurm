@@ -1,1 +1,1 @@
-Códigos Python que estou utilizando com contêiner AppTainer para rodar em um HPC 
+Códigos Python que estou utilizando com contêiner AppTainer rodando em HPC 
