@@ -115,9 +115,6 @@ def make_map(
 
     gl.top_labels = gl.right_labels = False
 
-    gl.xlabel_style = {'size': 12}
-    gl.ylabel_style = {'size': 12}
-
     if point:
 
         ax.plot(
@@ -142,16 +139,16 @@ def plot_shapefile():
 
     shape_manobra = ShapelyFeature(
         Reader(
-            path_base + f'/{path_shapefile}/manobra/area_manobra.shp')
-        .geometries(),
+            path_base + f'/{path_shapefile}/manobra/area_manobra.shp') \
+                .geometries(),
         ccrs.PlateCarree(),
         edgecolor='b',
         facecolor='none')
 
     shape_aquisicao = ShapelyFeature(
         Reader(
-            path_base + f'/{path_shapefile}/aquisicao/area_aquisicao.shp')
-        .geometries(),
+            path_base + f'/{path_shapefile}/aquisicao/area_aquisicao.shp') \
+                .geometries(),
         ccrs.PlateCarree(),
         edgecolor='r',
         facecolor='none')
@@ -164,6 +161,7 @@ def plot_shapefile():
     return None
 
 
+
 if __name__ == '__main__':
 
     # Mapeamento Contêiner
@@ -171,7 +169,7 @@ if __name__ == '__main__':
     path_base = '/base'
 
     with open(
-            '/'.join([path_local, 'input_plot_shapefile.json'])) as f:
+        '/'.join([path_local, 'input_plot_shapefile.json'])) as f:
 
         daux = json.load(f)
 
@@ -182,12 +180,10 @@ if __name__ == '__main__':
     depth = daux['depth']                    # profundidade
     lon = daux['lon']                        # longitude para um ponto
     lat = daux['lat']                        # latitude para um ponto
-    lonLim_map = daux['lonLim']              # limites longitude para o mapa
-    latLim_map = daux['latLim']              # limites latitude para o mapa
+    lonLim_map = daux['lonLim']              # limites longitude para um mapa
+    latLim_map = daux['latLim']              # limites latitude para um mapa
     variables = daux['variables']            # lista de variáveis
     path_shapefile = daux['path_shapefile']  # pasta onde salvar os dados
-
-    BATHY = json.loads(daux.get('batimetria').lower())
 
     manobra = gpd.read_file(
         path_base + f'/{path_shapefile}/manobra/area_manobra.shp')
@@ -197,8 +193,8 @@ if __name__ == '__main__':
 
     # bounds = manobra.bounds
 
-    lonLim_manobra = manobra.bounds[['minx', 'maxx']].values  # .tolist()
-    latLim_manobra = manobra.bounds[['miny', 'maxy']].values  # .tolist()
+    lonLim_manobra = manobra.bounds[['minx', 'maxx']].values  #.tolist()
+    latLim_manobra = manobra.bounds[['miny', 'maxy']].values  #.tolist()
 
     lonLim_aquisicao = aquisicao.bounds[['minx', 'maxx']].values
     latLim_aquisicao = aquisicao.bounds[['miny', 'maxy']].values
@@ -208,107 +204,6 @@ if __name__ == '__main__':
     fig, ax = make_map(
         'teste', lonLim_map, latLim_map, label_step=2)
 
-    title = 'Área Sísmica'
-
-    if BATHY:
-        import xarray as xr
-        from matplotlib.colors import ListedColormap
-
-        cmap = 'Blues'  # apenas para nome figura
-        res = 60        # resolução ETOPO
-
-        colors = plt.cm.Blues(np.linspace(.98, .2, 256))
-
-        new_cmap = ListedColormap(colors)
-
-        ds = xr.open_mfdataset(
-            f'/rotinas/etopo/*{res}s*.nc', autoclose=True)
-
-        area = ds.sel(
-            lat=slice(*sorted(latLim_map)),
-            lon=slice(*sorted(lonLim_map)))
-
-        vmax = 0
-        vmin = area.z.min().compute()
-
-        # Pegando apenas batimetria
-        bathy = area['z'].where(area['z'] <= vmax)
-
-        # Setar valores acima de zero (preencher buracos em branco)
-        # com a cor do zero.
-        # Pegar cor do zero
-        zero_color = new_cmap(1.0)
-
-        # Define cor do zero para valores acima do vmax
-        new_cmap.set_over(zero_color)
-        # Define cor do zero para valores mascarados NaN
-        new_cmap.set_bad(zero_color)
-
-        # Batimetria
-        mesh = bathy.plot.pcolormesh(
-            ax=ax,
-            transform=ccrs.PlateCarree(),
-            cmap=new_cmap,
-            vmin=vmin,
-            vmax=vmax,  # valores acima na cor definida por set_over
-            cbar_kwargs={
-                # 'label': 'profundidade [m]',
-                'orientation': 'vertical',
-                'pad': .04,
-                'shrink': .7,    # % que ocupa do eixo do mapa
-                'aspect': 35,    # quanto maior, mais fina
-                # matplotlib mais recente poderia:
-                # 'label_kwargs': {'fontsize': 12, 'labelpad': 15},
-                # 'tick_params': {'labelsize': 10}
-            },
-            zorder=0)
-
-        # cbar.ax.yaxis.label.set_rotation(-90)
-
-        cbar = mesh.colorbar
-        cbar.ax.set_ylabel(
-            'Profundidade [m]',
-            fontsize=14,
-            rotation=-90,
-            labelpad=20)
-
-        cbar.ax.tick_params(labelsize=11)
-
-        # Isóbatas
-        # levels = [-200]
-        levels = [-200, -1000, -2000, -3000, -4000]
-
-        c = bathy.plot.contour(
-            ax=ax,
-            transform=ccrs.PlateCarree(),
-            levels=levels,
-            colors=['#333333',],
-            linewidths=.4,
-            linestyles=['-',],
-            zorder=1)
-
-        fmt = {-200: '200m',
-               -100: '100m',
-               -500: '500m',
-               -1000: '1000m',
-               -2000: '2000m',
-               -3000: '3000m',
-               -4000: '4000m'}
-
-        ax.clabel(
-            c, fmt=fmt,
-            inline=True, fontsize=9, colors='#333333', zorder=1)
-
-        title += f'\nMapa Batimétrico (ETOPO {res}s)'
-
-        fig.subplots_adjust(bottom=.07, top=.87)
-
-    if not BATHY:
-        fig.subplots_adjust(bottom=.07, top=.91)
-
-    ax.set_title(title, fontsize=16, pad=17)
-
-    # Plotando Shapefiles
     _ = manobra.plot(
         facecolor='none',
         edgecolor='red',
@@ -331,8 +226,19 @@ if __name__ == '__main__':
                      'orientation': 'vertical'},
         zorder=3)
 
-    # Plotar textos associados
-    offset = .1
+    ax.set_title('Área Sísmica', fontsize=18)
+    
+    # handles, labels = plt.gca().get_legend_handles_labels()
+    # handles.extend([polygon])
+    # labels.extend(["Name of the shape"])
+    # plt.legend(handles=handles, labels=labels)
+    
+    # ax.legend(
+    #     handles=[mano, aqui],
+    #     loc='upper left',
+    #     bbox_to_anchor=(1.02, .9),
+    #     bbox_transform=ax.transAxes,
+    #     fontsize=18)
 
     ax.text(
         lonLim_manobra[0][0],
@@ -341,21 +247,17 @@ if __name__ == '__main__':
         ha='left',
         va='bottom',
         transform=ccrs.PlateCarree(),
-        fontsize=11,
-        color='r',
-        zorder=3)
+        fontsize=10,
+        color='r')
 
     ax.text(
         lonLim_aquisicao[0][1],
-        latLim_aquisicao[0][0] - offset,
+        latLim_aquisicao[0][0],
         'Aquisição',
         ha='right',
         va='top',
         transform=ccrs.PlateCarree(),
-        fontsize=11,
-        color='k',
-        zorder=3)
+        fontsize=10,
+        color='k')
 
-    fig.savefig(
-        f'{path_local}/batimetria_area_aquisicao_sismica_teste.png',
-        format='png')
+    fig.savefig(f'{path_local}/area_aquisicao_sismica.png', format='png')
